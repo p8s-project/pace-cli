@@ -91,5 +91,5 @@ Congratulations! You've just seen the core workflow of `p8s`.
 From here, you can:
 *   `cd` into the `infra` directory and run `terraform init` and `terraform apply`.
 *   Run `pace validate` to check your manifest against the catalog.
-*   Learn how to create a private catalog for your organization by reading our **[Private Catalog Guide](../docs/product/PRIVATE_CATALOG_GUIDE.md)**.
+*   Learn how to create a private catalog for your organization by reading our **[Private Catalog Guide](PRIVATE_CATALOG_GUIDE.md)**.
 *   Explore adding more resources to your `app.yaml`, like a `postgres-db` or a `redis-cache`.
