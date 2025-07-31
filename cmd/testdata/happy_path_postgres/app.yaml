@@ -1,0 +1,6 @@
+name: my-app
+resources:
+  - id: my-app-db
+    uses: postgres:v1
+    with:
+      size: small

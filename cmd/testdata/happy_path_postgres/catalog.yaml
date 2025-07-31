@@ -1,0 +1,12 @@
+resources:
+  postgres:v1:
+    source: "terraform-aws-modules/rds/aws"
+    version: "6.2.0"
+    inputs:
+      - from: "id"
+        to: "db_name"
+        required: true
+      - from: "size"
+        to: "instance_class"
+        required: false
+        default: "db.t3.micro"

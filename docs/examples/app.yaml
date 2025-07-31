@@ -1,0 +1,12 @@
+# app.yaml - The Developer's "What I Want" File (New Schema)
+appName: my-cool-app
+resources:
+  s3-bucket:
+    - name: document-storage
+      versioning: true
+  postgres-db:
+    - name: primary-db
+      size: "db.t3.micro"
+  redis-cache:
+    - name: app-cache
+      size: "cache.t3.small"

@@ -1,0 +1,33 @@
+# catalog.yaml - The Platform's "How We Build It" File (New Schema)
+resources:
+  s3-bucket:
+    source: "terraform-aws-modules/s3-bucket/aws"
+    version: "3.15.1"
+    inputs:
+      - from: "name"
+        to: "bucket"
+        required: true
+      - from: "versioning"
+        to: "versioning.enabled"
+        required: false
+        default: false
+  postgres-db:
+    source: "terraform-aws-modules/rds/aws"
+    version: "6.2.0"
+    inputs:
+      - from: "name"
+        to: "db_name"
+        required: true
+      - from: "size"
+        to: "instance_class"
+        required: true
+  redis-cache:
+    source: "terraform-aws-modules/elasticache/aws"
+    version: "1.6.0"
+    inputs:
+      - from: "name"
+        to: "cluster_id"
+        required: true
+      - from: "size"
+        to: "node_type"
+        required: true

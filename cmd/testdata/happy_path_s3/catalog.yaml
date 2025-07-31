@@ -1,0 +1,12 @@
+resources:
+  s3-bucket:v1:
+    source: "terraform-aws-modules/s3-bucket/aws"
+    version: "3.15.1"
+    inputs:
+      - from: "id"
+        to: "bucket"
+        required: true
+      - from: "versioning"
+        to: "versioning.enabled"
+        required: false
+        default: false

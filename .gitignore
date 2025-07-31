@@ -1,0 +1,13 @@
+# Compiled binary
+pace
+pace.exe
+
+# Generated output directory
+/output/
+
+# IDE/Editor specific files
+.vscode/
+
+# OS-specific files
+.DS_Store
+Thumbs.db
