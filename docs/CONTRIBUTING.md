@@ -35,6 +35,34 @@ cd pace-cli
 go test ./...
 ```
 
+## Commit Message Standard
+
+To maintain a clean and readable Git history, this project uses the **Conventional Commits** specification for our Pull Request titles. Each PR title should be structured as follows:
+
+```
+<type>: <description>
+```
+
+**Common Types:**
+
+*   **`feat`**: A new feature.
+*   **`fix`**: A bug fix.
+*   **`docs`**: Changes to documentation only.
+*   **`style`**: Changes that do not affect the meaning of the code (white-space, formatting, etc).
+*   **`refactor`**: A code change that neither fixes a bug nor adds a feature.
+*   **`test`**: Adding missing tests or correcting existing tests.
+*   **`chore`**: Changes to the build process or auxiliary tools and libraries.
+
+**Example:**
+```
+feat: Add support for structured output generation
+```
+```
+docs: Update CONTRIBUTING.md with commit message standard
+```
+
+A GitHub Action will automatically check your Pull Request title to ensure it meets this standard.
+
 ## Submitting a Pull Request
 
 1.  Create a new branch for your feature or bug fix.
