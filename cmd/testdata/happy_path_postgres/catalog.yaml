@@ -1,5 +1,5 @@
 resources:
-  postgres:v1:
+  community/aws/data-management/rds-postgres:
     source: "terraform-aws-modules/rds/aws"
     version: "6.2.0"
     inputs:

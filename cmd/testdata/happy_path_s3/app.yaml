@@ -1,6 +1,8 @@
 name: my-test-app
+stack: aws
+tap: community
 resources:
   - id: test-bucket
-    uses: s3-bucket:v1
+    uses: s3-bucket
     with:
       versioning: true

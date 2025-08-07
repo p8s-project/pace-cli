@@ -1,6 +1,8 @@
 name: my-app
+stack: aws
+tap: community
 resources:
   - id: my-app-db
-    uses: postgres:v1
+    uses: rds-postgres
     with:
       size: small

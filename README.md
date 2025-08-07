@@ -1,17 +1,17 @@
 <p align="center">
-  <img src="assets/logo.png" alt="p8s logo" width="200"/>
+  <img src="assets/logo.png" alt="Vezia logo" width="200"/>
 </p>
-<h1 align="center">p8s: The Homebrew for Cloud Infrastructure</h1>
+<h1 align="center">Vezia: The Homebrew for Cloud Infrastructure</h1>
 
-[![Go Report Card](https://goreportcard.com/badge/github.com/p8s-dev/p8s)](https://goreportcard.com/report/github.com/p8s-dev/p8s)
-[![GitHub release (latest by date)](https://img.shields.io/github/v/release/p8s-dev/p8s)](https://github.com/p8s-dev/p8s/releases)
-[![GitHub Discussions](https://img.shields.io/github/discussions/p8s-dev/p8s)](https://github.com/p8s-dev/p8s/discussions)
+[![Go Report Card](https://goreportcard.com/badge/github.com/Vezia/vez-cli)](https://goreportcard.com/report/github.com/Vezia/vez-cli)
+[![GitHub release (latest by date)](https://img.shields.io/github/v/release/Vezia/vez-cli)](https://github.com/Vezia/vez-cli/releases)
+[![GitHub Discussions](https://img.shields.io/github/discussions/Vezia/vez-cli)](https://github.com/Vezia/vez-cli/discussions)
 
-`p8s` (pronounced "Pace") is an open-source, developer-centric platform that brings a "serverless-like" experience to managing production-ready cloud infrastructure. Its core component is a powerful command-line tool, `pace`, that acts as a high-level abstraction layer on top of Terraform.
+`Vezia` is an open-source, developer-centric platform that brings a "serverless-like" experience to managing production-ready cloud infrastructure. Its core component is a powerful command-line tool, `vez`, that acts as a high-level abstraction layer on top of Terraform.
 
 Our mission is to bridge the "Developer Experience Gap" by empowering application developers to self-service their infrastructure needs safely and efficiently.
 
-> Your expensive developers shouldn't be spending their time trying to be amateur DevOps engineers. `p8s` gives them a fast pace to build, without the hassle.
+> Your expensive developers shouldn't be spending their time trying to be amateur DevOps engineers. `Vezia` gives them a clear path to build, without the hassle.
 
 ---
 
@@ -22,11 +22,11 @@ In modern platform engineering, developers are often expected to manage their ow
 *   **Platform Team Bottlenecks:** Central platform teams are overwhelmed with support tickets, slowing down the entire organization.
 *   **Inconsistent & Insecure Environments:** Without a "paved road," infrastructure is often configured inconsistently, leading to security vulnerabilities and operational risk.
 
-`p8s` solves this by providing a simple, declarative interface for developers to consume a platform team's curated, best-practice infrastructure.
+`Vezia` solves this by providing a simple, declarative interface for developers to consume a platform team's curated, best-practice infrastructure.
 
 ## How It Works: The Two-File System
 
-`p8s` introduces a clean separation of concerns with two simple YAML files:
+`Vezia` introduces a clean separation of concerns with two simple YAML files:
 
 1.  **`app.yaml` (The "What"):** A developer-facing manifest where they declare what they need.
     ```yaml
@@ -51,7 +51,7 @@ In modern platform engineering, developers are often expected to manage their ow
         # ...
     ```
 
-The `pace` CLI reads these two files and generates the final, production-ready Terraform code.
+The `vez` CLI reads these two files and generates the final, production-ready Terraform code.
 
 ## Key Features
 
@@ -63,13 +63,13 @@ The `pace` CLI reads these two files and generates the final, production-ready T
 
 ## Getting Started
 
-To get started with `p8s`, check out our comprehensive **[GETTING_STARTED.md](docs/GETTING_STARTED.md)** guide.
+To get started with `Vezia`, check out our comprehensive **[GETTING_STARTED.md](docs/GETTING_STARTED.md)** guide.
 
 ## Community
 
-`p8s` is a community-driven project. We welcome contributions of all kinds!
-*   Join the discussion on **[GitHub Discussions](https://github.com/p8s-dev/p8s/discussions)**.
-*   Report bugs or request features on **[GitHub Issues](https://github.com/p8s-dev/p8s/issues)**.
+`Vezia` is a community-driven project. We welcome contributions of all kinds!
+*   Join the discussion on **[GitHub Discussions](https://github.com/Vezia/vez-cli/discussions)**.
+*   Report bugs or request features on **[GitHub Issues](https://github.com/Vezia/vez-cli/issues)**.
 
 ---
 

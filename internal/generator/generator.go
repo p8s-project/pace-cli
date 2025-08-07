@@ -1,19 +1,25 @@
 package generator
 
 import (
-	"bytes"
 	"embed"
 	"fmt"
 	"os"
 	"path/filepath"
-	"text/template"
 
-	"github.com/p8s-project/pace-cli/internal/types"
-	"gopkg.in/yaml.v3"
+	"github.com/flosch/pongo2/v6"
+	"github.com/Vezia/vez-cli/internal/builder"
+	"github.com/Vezia/vez-cli/internal/loader"
+	"github.com/Vezia/vez-cli/internal/resolver"
+	"github.com/Vezia/vez-cli/internal/types"
 )
 
 //go:embed templates/*.tmpl
 var templateFS embed.FS
+
+// Options defines configuration for the generation process.
+type Options struct {
+	Verbose bool
+}
 
 // Generator holds the state for the generation process.
 type Generator struct {
@@ -23,12 +29,12 @@ type Generator struct {
 
 // New creates a new Generator.
 func New(appFilePath, catalogPath string) (*Generator, error) {
-	app, err := loadAppManifest(appFilePath)
+	app, err := loader.LoadApp(appFilePath)
 	if err != nil {
 		return nil, err
 	}
 
-	catalog, err := loadCatalog(catalogPath)
+	catalog, err := loader.LoadCatalog(catalogPath)
 	if err != nil {
 		return nil, err
 	}
@@ -39,149 +45,98 @@ func New(appFilePath, catalogPath string) (*Generator, error) {
 	}, nil
 }
 
-func loadAppManifest(path string) (*types.AppManifest, error) {
-	data, err := os.ReadFile(path)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read app manifest file: %w", err)
-	}
-
-	var manifest types.AppManifest
-	if err := yaml.Unmarshal(data, &manifest); err != nil {
-		return nil, fmt.Errorf("failed to parse app manifest: %w", err)
-	}
-
-	return &manifest, nil
-}
-
-func loadCatalog(path string) (*types.Catalog, error) {
-	data, err := os.ReadFile(path)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read catalog file: %w", err)
-	}
-
-	var catalog types.Catalog
-	if err := yaml.Unmarshal(data, &catalog); err != nil {
-		return nil, fmt.Errorf("failed to parse catalog: %w", err)
-	}
-
-	return &catalog, nil
-}
-
 // Generate processes the AppManifest and Catalog, executing templates to create Terraform files.
-func (g *Generator) Generate(outputDir string) error {
+func (g *Generator) Generate(outputDir string, opts *Options) error {
 	// Ensure the output directory exists.
 	if err := os.MkdirAll(outputDir, 0755); err != nil {
 		return fmt.Errorf("failed to create output directory: %w", err)
 	}
 
-	// Parse the generic Terraform module template.
-	tmpl, err := template.ParseFS(templateFS, "templates/module.tf.tmpl")
-	if err != nil {
-		return fmt.Errorf("failed to parse generic module template: %w", err)
+	// Validate the app manifest.
+	if g.App.Stack == "" {
+		return fmt.Errorf("missing required 'stack' field in app.yaml")
 	}
 
-	// Iterate over each resource requested in the app manifest.
-	for _, request := range g.App.Resources {
-		// Find the corresponding resource specification in the catalog.
-		catalogEntry, ok := g.Catalog.Resources[request.Uses]
-		if !ok {
-			return fmt.Errorf("resource type '%s' requested by '%s' not found in catalog", request.Uses, request.ID)
-		}
+	// Create a new resolver.
+	r := resolver.New(g.App, g.Catalog)
 
-		// Build the map of inputs to pass to the Terraform module.
-		inputs, err := g.buildInputs(request, catalogEntry)
-		if err != nil {
+	// Pass 1: Resolve dependencies and build the outputs map.
+	outputs := make(map[string]map[string]string)
+	for _, request := range g.App.Resources {
+		if err := r.ResolveDependencies(request, outputs); err != nil {
 			return err
 		}
+	}
 
-		// Prepare the data structure for template execution.
-		templateData := struct {
-			Request      types.ResourceRequest
-			CatalogEntry types.ResourceSpec
-			Inputs       map[string]interface{}
-		}{
-			Request:      request,
-			CatalogEntry: catalogEntry,
-			Inputs:       inputs,
-		}
+	// Create a new builder.
+	b := builder.New(g.App, g.Catalog)
 
-		// Execute the template to generate the HCL code.
-		var output bytes.Buffer
-		if err := tmpl.Execute(&output, templateData); err != nil {
-			return fmt.Errorf("failed to execute template for resource %s: %w", request.ID, err)
+	// Pass 2: Generate the Terraform files.
+	for _, request := range g.App.Resources {
+		if err := g.generateResource(request, outputDir, "templates/module.tf.tmpl", outputs, b, r, opts); err != nil {
+			return err
 		}
-
-		// Write the generated HCL to a file.
-		fileName := fmt.Sprintf("%s.tf", request.ID)
-		outputPath := filepath.Join(outputDir, fileName)
-		if err := os.WriteFile(outputPath, output.Bytes(), 0644); err != nil {
-			return fmt.Errorf("failed to write output file %s: %w", outputPath, err)
-		}
-		fmt.Printf("Successfully generated %s\n", outputPath)
 	}
 	return nil
 }
 
-// buildInputs constructs the final map of variables to be passed to a Terraform module.
-// It maps the inputs from the developer's request (`with` block) to the variable names
-// expected by the module, handling defaults and required fields as defined in the catalog.
-func (g *Generator) buildInputs(request types.ResourceRequest, catalogEntry types.ResourceSpec) (map[string]interface{}, error) {
-	inputs := make(map[string]interface{})
-
-	// Always map the resource ID to the 'name' input if it's defined in the catalog.
-	// This is a common convention.
-	for _, inputSpec := range catalogEntry.Inputs {
-		if inputSpec.From == "id" {
-			inputs[inputSpec.To] = fmt.Sprintf(`"%s"`, request.ID)
-		}
+// generateResource generates the Terraform file for a single resource.
+func (g *Generator) generateResource(request types.ResourceRequest, outputDir string, tmplPath string, outputs map[string]map[string]string, b *builder.Builder, r *resolver.Resolver, opts *Options) error {
+	// Resolve the resource request.
+	resolvedUses, err := r.ResolveUses(request.Uses)
+	if err != nil {
+		return err
 	}
 
-	// Process the `with` block from the developer's request.
-	for _, inputSpec := range catalogEntry.Inputs {
-		// Skip the special 'id' mapping as it's already handled.
-		if inputSpec.From == "id" {
-			continue
-		}
-
-		val, ok := request.With[inputSpec.From]
-		if !ok {
-			if inputSpec.Required {
-				return nil, fmt.Errorf("missing required input '%s' for resource '%s'", inputSpec.From, request.ID)
-			}
-			// Use the default value from the catalog if one is defined.
-			if inputSpec.Default != nil {
-				val = inputSpec.Default
-			} else {
-				// If no default is specified, skip this input.
-				continue
-			}
-		}
-
-		// Perform value mapping for specific known inputs.
-		if inputSpec.From == "size" {
-			val = mapSizeToInstanceClass(val.(string))
-		}
-
-		// Format the value for HCL. Strings are quoted, other types are passed through.
-		if s, ok := val.(string); ok {
-			inputs[inputSpec.To] = fmt.Sprintf(`"%s"`, s)
-		} else {
-			inputs[inputSpec.To] = val
-		}
+	// Find the corresponding resource specification in the catalog.
+	catalogEntry, ok := g.Catalog.Resources[resolvedUses]
+	if !ok {
+		return fmt.Errorf("resource type '%s' requested by '%s' not found in catalog", resolvedUses, request.ID)
 	}
-	return inputs, nil
+
+	// Build the map of inputs to pass to the Terraform module.
+	inputs, err := b.BuildInputs(request, catalogEntry, outputs)
+	if err != nil {
+		return err
+	}
+
+	// Prepare the data structure for template execution.
+	templateData := pongo2.Context{
+		"Request":      request,
+		"CatalogEntry": catalogEntry,
+		"Inputs":       inputs,
+	}
+
+	// Read the template from the embedded filesystem.
+	tplBytes, err := templateFS.ReadFile(tmplPath)
+	if err != nil {
+		return fmt.Errorf("failed to read template file %s: %w", tmplPath, err)
+	}
+
+	// Register custom filters.
+	pongo2.RegisterFilter("is_string", isString)
+
+	// Execute the template to generate the HCL code.
+	tpl, err := pongo2.FromString(string(tplBytes))
+	if err != nil {
+		return fmt.Errorf("failed to parse template %s: %w", tmplPath, err)
+	}
+	output, err := tpl.Execute(templateData)
+	if err != nil {
+		return fmt.Errorf("failed to execute template for resource %s: %w", request.ID, err)
+	}
+
+	// Write the generated HCL to a file.
+	fileName := fmt.Sprintf("%s.tf", request.ID)
+	outputPath := filepath.Join(outputDir, fileName)
+	if err := os.WriteFile(outputPath, []byte(output), 0644); err != nil {
+		return fmt.Errorf("failed to write output file %s: %w", outputPath, err)
+	}
+	fmt.Printf("Successfully generated %s\n", outputPath)
+
+	return nil
 }
 
-// mapSizeToInstanceClass is a simple example of a value mapper.
-func mapSizeToInstanceClass(size string) string {
-	switch size {
-	case "small":
-		return "db.t3.small"
-	case "medium":
-		return "db.t3.medium"
-	case "large":
-		return "db.t3.large"
-	default:
-		return "db.t3.micro" // A safe default.
-	}
+func isString(in *pongo2.Value, param *pongo2.Value) (*pongo2.Value, *pongo2.Error) {
+	return pongo2.AsValue(in.IsString()), nil
 }
