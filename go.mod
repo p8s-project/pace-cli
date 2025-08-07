@@ -1,8 +1,9 @@
-module github.com/p8s-project/pace-cli
+module github.com/Vezia/vez-cli
 
 go 1.23.4
 
 require (
+	github.com/flosch/pongo2/v6 v6.0.0
 	github.com/spf13/cobra v1.9.1
 	gopkg.in/yaml.v3 v3.0.1
 )

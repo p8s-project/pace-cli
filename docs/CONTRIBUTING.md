@@ -77,4 +77,39 @@ A GitHub Action will automatically check your Pull Request title to ensure it me
 4.  Open a pull request from your fork to the `main` branch of the `p8s-dev/p8s` repository.
 5.  Please fill out the pull request template with as much detail as possible.
 
+## Contributing to the Community Catalog
+
+The `p8s` community catalog is a curated collection of modules that provide a "paved road" for developers to provision cloud infrastructure and application-level components. We welcome contributions of new modules to the catalog.
+
+### The "One Module, One File" Model
+
+To ensure the catalog is scalable, maintainable, and community-friendly, we use a "one module, one file" model, inspired by the design of Homebrew.
+
+*   **One Module, One File:** Each module in the community catalog is defined in its own `module-name.yaml` file.
+*   **Category-Based Directory Structure:** The catalogs are organized by category, providing an intuitive and discoverable experience for developers.
+
+### How to Add a New Module
+
+1.  **Find the Right Category:** Choose the appropriate category for your module from the existing directories in `pace-cli/catalogs`. If a suitable category does not exist, please open an issue to discuss creating a new one.
+2.  **Create a New Module File:** Create a new `module-name.yaml` file in the appropriate category directory. The file name should be the same as the name of the resource in the `app.yaml` (e.g., `s3-bucket.yaml`).
+3.  **Define the Module:** Define the module using our simple, declarative YAML schema.
+
+    ```yaml
+    # A short, descriptive title for the module
+    #
+    # A longer description of the module and what it does.
+    #
+    source: "<terraform-module-source>"
+    version: "<terraform-module-version>"
+    inputs:
+      - from: "<app-yaml-input-name>"
+        to: "<terraform-module-variable-name>"
+        required: true
+      - from: "<app-yaml-input-name>"
+        to: "<terraform-module-variable-name>"
+        required: false
+        default: "<default-value>"
+    ```
+4.  **Open a Pull Request:** Open a pull request with your new module. Please include a clear and descriptive title and a detailed description of the module and why it should be added to the catalog.
+
 Thank you again for your contribution!

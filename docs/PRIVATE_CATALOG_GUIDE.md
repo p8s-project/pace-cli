@@ -1,6 +1,6 @@
-# Guide: Creating a Private `p8s` Catalog
+# Guide: Creating a Private `Vezia` Catalog
 
-This guide is for platform engineers (the "Producers") who want to create a private, company-specific catalog for `p8s`. A private catalog allows you to provide your application developers with a curated set of hardened, pre-approved infrastructure modules.
+This guide is for platform engineers (the "Producers") who want to create a private, company-specific catalog for `Vezia`. A private catalog allows you to provide your application developers with a curated set of hardened, pre-approved infrastructure modules.
 
 ## The "Why": A Paved Road for Infrastructure
 
@@ -13,7 +13,7 @@ By creating a private catalog, you are building a "paved road" for your develope
 
 The first step is to create a new, dedicated Git repository to house your catalog. This repository will contain your `catalog.yaml` and, optionally, any custom Terraform modules you maintain.
 
-This repository should be accessible to the developers who will be using the `pace` CLI.
+This repository should be accessible to the developers who will be using the `vez` CLI.
 
 ## Step 2: Build Your `catalog.yaml`
 
@@ -50,31 +50,31 @@ resources:
     *   **`required`**: A boolean indicating whether the developer must provide this input.
     *   **`default`**: A default value to use if the input is not provided.
 
-## Step 3: Using `pace init`
+## Step 3: Using `vez init`
 
-Once your `catalog.yaml` is committed to your repository, you can configure the `pace` CLI to use it with the `pace init` command.
+Once your `catalog.yaml` is committed to your repository, you can configure the `vez` CLI to use it with the `vez init` command.
 
-This command tells `pace` where to find your private catalog. It will download the catalog and pre-fetch all the Terraform modules it references into a local cache (`~/.pace/cache`).
+This command tells `vez` where to find your private catalog. It will download the catalog and pre-fetch all the Terraform modules it references into a local cache (`~/.vez/cache`).
 
 ```bash
-# Configure pace to use your private catalog
-pace init --catalog-url git@github.com:my-company/my-pace-catalog.git
+# Configure vez to use your private catalog
+vez init --catalog-url git@github.com:my-company/my-vezia-catalog.git
 ```
 
-After running this command, any subsequent `pace generate` commands will use your private catalog instead of the default public one.
+After running this command, any subsequent `vez generate` commands will use your private catalog instead of the default public one.
 
 ## Step 4: Advanced Features
 
-`p8s` provides several advanced features for creating a robust and secure catalog.
+`Vezia` provides several advanced features for creating a robust and secure catalog.
 
 ### A. Value Mapping
 
 For certain inputs, you may want to provide a simple, abstract option for developers that maps to a more complex value. For example, you can offer a `size` input that maps to specific instance classes.
 
-This logic is handled within the `pace` tool itself and can be extended.
+This logic is handled within the `vez` tool itself and can be extended.
 
 ### B. Hardcoded Secure Defaults
 
-You can enforce security by hardcoding critical variables directly in your templates or within the `pace` tool's logic. For example, you can ensure that all databases are created with `publicly_accessible = false`, regardless of user input. This is a powerful way to enforce security at the generation level.
+You can enforce security by hardcoding critical variables directly in your templates or within the `vez` tool's logic. For example, you can ensure that all databases are created with `publicly_accessible = false`, regardless of user input. This is a powerful way to enforce security at the generation level.
 
 By following this guide, you can create a powerful, private catalog that will accelerate your development teams while maintaining the highest standards of security and governance.

@@ -1,5 +1,5 @@
 resources:
-  s3-bucket:v1:
+  community/aws/data-management/s3-bucket:
     source: "terraform-aws-modules/s3-bucket/aws"
     version: "3.15.1"
     inputs:

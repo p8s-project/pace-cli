@@ -5,6 +5,8 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/Vezia/vez-cli/internal/loader"
 )
 
 func TestLoadAppManifest(t *testing.T) {
@@ -28,7 +30,7 @@ resources:
 			t.Fatal(err)
 		}
 
-		manifest, err := loadAppManifest(tmpfile.Name())
+		manifest, err := loader.LoadAppManifest(tmpfile.Name())
 		if err != nil {
 			t.Errorf("expected no error, got %v", err)
 		}
@@ -40,44 +42,6 @@ resources:
 		}
 		if manifest.Resources[0].ID != "test-bucket" {
 			t.Errorf("expected resource ID to be 'test-bucket', got '%s'", manifest.Resources[0].ID)
-		}
-	})
-}
-
-func TestLoadCatalog(t *testing.T) {
-	t.Run("valid catalog", func(t *testing.T) {
-		tmpfile, err := os.CreateTemp("", "catalog.yaml")
-		if err != nil {
-			t.Fatal(err)
-		}
-		defer os.Remove(tmpfile.Name())
-
-		content := []byte(`
-resources:
-  s3-bucket:
-    source: "some-source"
-    version: "1.0.0"
-    inputs:
-      - from: "name"
-        to: "bucket"
-`)
-		if _, err := tmpfile.Write(content); err != nil {
-			t.Fatal(err)
-		}
-		if err := tmpfile.Close(); err != nil {
-			t.Fatal(err)
-		}
-
-		catalog, err := loadCatalog(tmpfile.Name())
-		if err != nil {
-			t.Errorf("expected no error, got %v", err)
-		}
-		spec, ok := catalog.Resources["s3-bucket"]
-		if !ok {
-			t.Fatal("expected 's3-bucket' resource to be in catalog")
-		}
-		if len(spec.Inputs) != 1 {
-			t.Error("expected 1 input spec")
 		}
 	})
 }
@@ -102,7 +66,8 @@ func TestGenerate_GoldenFile(t *testing.T) {
 		if err != nil {
 			t.Fatalf("failed to create generator: %v", err)
 		}
-		if err := generator.Generate(outputDir); err != nil {
+		opts := &Options{Verbose: false} // We don't need verbose output in tests.
+		if err := generator.Generate(outputDir, opts); err != nil {
 			t.Fatalf("generate failed: %v", err)
 		}
 
